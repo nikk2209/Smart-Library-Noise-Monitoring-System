@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Library Noise Monitor â€” Simulation</title>
+  <style>
+    :root { color-scheme: light; --navy:#142c4b; --muted:#61728a; --line:#dce5ef; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color:#18283d; background:radial-gradient(circle at 12% 0%,#e9f4ff 0,transparent 34%),#f5f7fb; }
+    main { width:min(1020px, calc(100% - 32px)); margin:46px auto; }
+    header { margin-bottom:22px }
+    .eyebrow { color:#3270ae; font-size:12px; font-weight:800; letter-spacing:.13em; text-transform:uppercase }
+    h1 { margin:7px 0 8px; color:var(--navy); font-size:clamp(27px,4vw,40px); letter-spacing:-.035em }
+    header p { margin:0; color:var(--muted); font-size:16px }
+    .layout { display:grid; grid-template-columns:1.25fr .75fr; gap:18px }
+    .card { background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 12px 30px #2039580b; padding:24px }
+    .reading-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px }
+    h2 { margin:0; color:var(--navy); font-size:18px }
+    .tag { border-radius:999px; padding:6px 10px; background:#eef4fb; color:#49627e; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap }
+    .meter { display:flex; align-items:baseline; gap:9px; margin:22px 0 18px }
+    #db { font-size:clamp(56px,9vw,82px); line-height:1; font-weight:800; color:var(--navy); letter-spacing:-.06em; font-variant-numeric:tabular-nums }
+    .unit { color:var(--muted); font-size:18px; font-weight:650 }
+    input[type=range] { width:100%; accent-color:#3270ae; cursor:pointer }
+    .range-labels { display:flex; justify-content:space-between; color:#8492a5; font-size:12px; margin-top:5px }
+    .presets { display:flex; flex-wrap:wrap; gap:8px; margin:19px 0 22px }
+    button { border:1px solid #d6e1ed; border-radius:10px; background:#fff; padding:9px 12px; color:#294664; font-weight:700; cursor:pointer; transition:.15s ease }
+    button:hover { border-color:#7ca9d5; background:#f2f8ff; transform:translateY(-1px) }
+    .threshold { background:#f5f8fc; border:1px solid #e3eaf2; border-radius:12px; padding:13px 14px }
+    .threshold-row { display:flex; justify-content:space-between; gap:12px; font-size:13px; color:#53677f }
+    .threshold-row strong { color:#243d59 }
+    .threshold input { margin:13px 0 0; accent-color:#d08b19 }
+    .status-card { display:flex; flex-direction:column; min-height:100% }
+    .status-card h2 { margin-bottom:20px }
+    .signal { display:flex; align-items:center; gap:16px; padding:16px; border-radius:14px; background:var(--wash); border:1px solid var(--edge); transition:background .2s,border-color .2s }
+    .light-stack { width:52px; flex:0 0 52px; padding:9px 8px; display:grid; gap:6px; border-radius:15px; background:#26364b; box-shadow:inset 0 2px 5px #0005 }
+    .lamp { width:36px; height:36px; border-radius:50%; background:#657183; opacity:.28; box-shadow:inset 0 2px 5px #0005; transition:.2s }
+    .lamp.on { opacity:1; box-shadow:0 0 18px currentColor, inset 0 2px 5px #fff8 }
+    .signal-copy { min-width:0 }
+    #state { margin:0 0 5px; color:var(--ink); font-size:22px; font-weight:800 }
+    #message { margin:0; color:#53677f; font-size:13px; line-height:1.5 }
+    .scale { margin-top:18px; display:grid; gap:9px }
+    .scale-row { display:flex; align-items:center; gap:10px; color:#687990; font-size:12px }
+    .dot { width:10px; height:10px; border-radius:50% }
+    .explain { margin-top:auto; padding-top:22px; color:#718096; font-size:12px; line-height:1.6 }
+    .how { grid-column:1/-1 }
+    .how h2 { margin-bottom:14px }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px }
+    .step { padding:15px; border:1px solid #e4ebf3; border-radius:12px; background:#fbfcfe }
+    .num { width:25px; height:25px; display:grid; place-items:center; margin-bottom:10px; border-radius:8px; color:#2869a7; background:#e7f2fc; font-size:12px; font-weight:800 }
+    .step strong { display:block; margin-bottom:4px; color:#29415c; font-size:13px }
+    .step span { color:#718096; font-size:12px; line-height:1.45 }
+    footer { margin:16px 3px 0; color:#8794a4; font-size:11px; text-align:center }
+    @media(max-width:700px) { main{margin:28px auto}.layout{grid-template-columns:1fr}.how{grid-column:auto}.steps{grid-template-columns:1fr}.status-card{min-height:0}.explain{margin-top:20px} }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Design Thinking Project Â· Soft Prototype</div>
+      <h1>Smart Library Noise Monitor</h1>
+      <p>Move the control to simulate sound and see how the system responds.</p>
+    </header>
+    <div class="layout">
+      <section class="card" aria-label="Noise level controls">
+        <div class="reading-top"><h2>Simulated sound level</h2><span class="tag">Demo mode</span></div>
+        <div class="meter"><span id="db">42</span><span class="unit">dB*</span></div>
+        <input id="level" type="range" min="30" max="90" value="42" aria-label="Simulated noise level">
+        <div class="range-labels"><span>30 Â· Quiet</span><span>90 Â· Loud</span></div>
+        <div class="presets" aria-label="Sample scenarios">
+          <button data-level="38">Quiet study</button><button data-level="58">Conversation</button><button data-level="76">Too loud</button>
+        </div>
+        <div class="threshold">
+          <div class="threshold-row"><span>Alert threshold</span><strong><span id="limitText">60</span> dB</strong></div>
+          <input id="limit" type="range" min="45" max="75" value="60" aria-label="Alert threshold">
+        </div>
+      </section>
+      <section class="card status-card" aria-live="polite">
+        <h2>System response</h2>
+        <div class="signal" id="signal">
+          <div class="light-stack" aria-label="Three LED indicator">
+            <span class="lamp" id="red"></span><span class="lamp" id="yellow"></span><span class="lamp" id="green"></span>
+          </div>
+          <div class="signal-copy"><p id="state">Quiet</p><p id="message">The library is within the quiet range.</p></div>
+        </div>
+        <div class="scale">
+          <div class="scale-row"><i class="dot" style="background:#28a36a"></i> Quiet Â· below 50 dB</div>
+          <div class="scale-row"><i class="dot" style="background:#e3a321"></i> Getting noisy Â· below threshold</div>
+          <div class="scale-row"><i class="dot" style="background:#e05252"></i> Above threshold Â· alert</div>
+        </div>
+        <p class="explain">In the hardware version, the microphone module senses sound, the ESP32 compares the reading with the threshold, and LEDs show the result.</p>
+      </section>
+      <section class="card how">
+        <h2>How the prototype logic works</h2>
+        <div class="steps">
+          <div class="step"><div class="num">1</div><strong>Sense</strong><span>A microphone module detects the surrounding sound.</span></div>
+          <div class="step"><div class="num">2</div><strong>Compare</strong><span>The ESP32 checks the sound level against a chosen limit.</span></div>
+          <div class="step"><div class="num">3</div><strong>Indicate</strong><span>Green means quiet, yellow means rising noise, red means over the limit.</span></div>
+        </div>
+      </section>
+    </div>
+    <footer>*This is an interactive software simulation. The slider creates sample values; it does not measure real sound or use the microphone.</footer>
+  </main>
+  <script>
+    const level = document.querySelector('#level');
+    const limit = document.querySelector('#limit');
+    const db = document.querySelector('#db');
+    const state = document.querySelector('#state');
+    const message = document.querySelector('#message');
+    const signal = document.querySelector('#signal');
+    const lamps = { red:document.querySelector('#red'), yellow:document.querySelector('#yellow'), green:document.querySelector('#green') };
+    const colors = { green:'#28a36a', yellow:'#e3a321', red:'#e05252' };
+    function update() {
+      const value = Number(level.value), threshold = Number(limit.value);
+      db.textContent = value;
+      document.querySelector('#limitText').textContent = threshold;
+      let mode;
+      if (value >= threshold) mode = 'red';
+      else if (value >= 50) mode = 'yellow';
+      else mode = 'green';
+      Object.entries(lamps).forEach(([key, lamp]) => { lamp.classList.toggle('on', key === mode); lamp.style.color = colors[key]; lamp.style.background = colors[key]; });
+      const copy = {
+        green:['Quiet','The library is within the quiet range.'],
+        yellow:['Getting noisy','Noise is rising. Please keep voices low.'],
+        red:['Above threshold','Noise is over the limit. Please keep your voice low.']
+      }[mode];
+      state.textContent = copy[0]; message.textContent = copy[1];
+      signal.style.setProperty('--wash', mode === 'green' ? '#eff9f3' : mode === 'yellow' ? '#fff8e8' : '#fff0f0');
+      signal.style.setProperty('--edge', mode === 'green' ? '#ccebd9' : mode === 'yellow' ? '#f4dfae' : '#f1caca');
+      signal.style.setProperty('--ink', colors[mode]);
+    }
+    level.addEventListener('input', update); limit.addEventListener('input', update);
+    document.querySelectorAll('[data-level]').forEach(button => button.addEventListener('click', () => { level.value = button.dataset.level; update(); }));
+    update();
+  </script>
+</body>
+</html>
+
