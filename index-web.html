@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QuietSpot — a calmer library, together</title><style>
+:root{--paper:#f4f4ef;--ink:#202925;--muted:#68726d;--green:#255b47;--line:#d9ded7;--card:#fbfcf8}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 system-ui,sans-ser>
+</style></head><body><main class="wrap"><nav><a class="brand" href="#top">◖ quietspot /</a><div><a href="#dashboard">Dashboard</a><a href="#device">The device</a><a href="#library">Library view</a><a href="#circuit">Circuitry</a><a href=>
+<section id="dashboard"><div class="head"><div><div class="kicker">A small working interaction</div><h2>See the room at a glance.</h2></div><p>Try the simulated sensor, or compare it with your browser microphone. Readings are relative de>
+<section id="device" class="device-grid"><div class="model"><span class="tag">Concept enclosure · drag to rotate · scroll to zoom</span><canvas id="deviceModel" aria-label="Interactive capsule enclosure"></canvas><div class="controls" id>
+<section id="library"><div class="head"><div><div class="kicker">Designed for shared spaces</div><h2>QuietSpot in the library.</h2></div><p>Explore the capsule on a typical shared study table. Rotate and zoom to see its placement among b>
+<section id="circuit"><div class="head"><div><div class="kicker">Hardware implementation</div><h2>From sound to signal.</h2></div><p>Proposed wiring for a classic ESP32 DevKit. Confirm board pinout before assembly.</p></div><div class="p>
+<script>
+const $=id=>document.getElementById(id);let activity=42,stream,ctx,timer,epoch=0,selected=0,values=[42,48,57],histories=values.map(v=>Array(10).fill(v)),alerts=[];const state=v=>v>68?'RED':v>50?'YELLOW':'GREEN';function update(n,source='>
+$('tableSelect').onchange=()=>{stop();selected=+$('tableSelect').value;update(values[selected],'demo',false)};$('clearAlerts').onclick=()=>{alerts=[];update(activity,'demo',false)};
+function stop(){epoch++;clearInterval(timer);stream?.getTracks().forEach(t=>t.stop());stream=null;if(ctx)ctx.close().catch(()=>{});ctx=null;$('stop').hidden=true;$('mic').disabled=false} $('level').oninput=()=>{let n=+$('level').value;st>
+// Self-contained polygon-based 3D renderer. No external libraries.
+function viewer(id,kind,controls){const canvas=$(id),g=canvas.getContext('2d');let yaw=-.35,pitch=.22,zoom=1,cut=false,explode=false,labels=kind!=='hero',drag=null;let faces=[],tags=[];const add=(pts,color)=>faces.push({pts,color});funct>
+function capsule(x,y,z,length,r,color,half='all',flat=false){let rings=[],straight=length/2-r;for(let j=0;j<=12;j++){let t=-Math.PI/2+j*Math.PI/12;let xx=(t<0?-straight:straight)+r*Math.sin(t);if(j===6){rings.push([-straight,r]);rings.pu>
+function device(x,y,z,s,open,ex){let X=v=>x+v*s,Y=v=>y+v*s,Z=v=>z+v*s;let B=(a,b,c,w,h,d,col)=>box(X(a),Y(b),Z(c),w*s,h*s,d*s,col);function shell(front,offset){let start=faces.length;capsule(0,0,0,4,1,front?'#e4e7dc':'#819484',front?'upp>
+function scene(){faces=[];tags=[];if(kind==='table'){box(0,-1.65,0,7,.22,4,'#b99972');for(let x of [-3,3])for(let z of [-1.55,1.55])box(x,-2.85,z,.24,2.3,.24,'#796b56');for(let z of [-3.0,3.0])for(let x of [-1.8,1.8]){box(x,-2.45,z,1.5,.>
+function transform(p){let [x,y,z]=p,c=Math.cos(yaw),s=Math.sin(yaw),u=x*c-z*s,v=x*s+z*c;return [u,y*Math.cos(pitch)-v*Math.sin(pitch),y*Math.sin(pitch)+v*Math.cos(pitch)]}function draw(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr>
+viewer('heroModel','hero');viewer('deviceModel','device','deviceControls');viewer('tableModel','table','tableControls');
+</script></body></html>
+
+
+
+                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                  
